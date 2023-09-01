@@ -4,19 +4,26 @@ import { useParams, Link } from "react-router-dom";
 import Spinner from "../components/layout/Spinner";
 import GithubContext from "../context/github/GithubContext";
 import RepoList from "../components/repos/RepoList";
+import { getUser, getUserRepos } from "../context/github/GithubActions";
 
 const User = () => {
-  const { getUser, user, loading, repos, getUserRepos } =
-    useContext(GithubContext);
+  const { user, loading, repos, dispatch } = useContext(GithubContext);
 
-  // path='/user/:login' : (:login) /user/ dan sonra gelen kismin degisken oldugunu ve o patterni
-  // almak icin login adini kullanmamiz gerektigini belirtir.
+  // get the :login param
   const params = useParams();
 
   useEffect(() => {
-    getUser(params.login);
-    getUserRepos(params.login);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    dispatch({ type: "SET_LOADING" });
+
+    const getUserData = async () => {
+      const userData = await getUser(params.login);
+      dispatch({ type: "GET_USER", payload: userData });
+
+      const repoData = await getUserRepos(params.login);
+      dispatch({ type: "GET_REPOS", payload: repoData });
+    };
+
+    getUserData();
   }, []);
 
   const {
